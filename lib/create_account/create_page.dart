@@ -1,8 +1,8 @@
+import 'package:demo/abstractions/sqlite_abstraction.dart';
 import 'package:demo/create_account/create_view_model.dart';
 import 'package:demo/database_page.dart';
-import 'package:demo/locator.dart';
-import 'package:demo/sqlite_abstraction.dart';
 import 'package:demo/user_service.dart';
+import 'package:demo/utils/locator.dart';
 import 'package:flutter/material.dart';
 
 class CreateAccountPage extends StatefulWidget {
@@ -30,7 +30,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text('Create Account'),
         actions: [
-          IconButton(
+          TextButton(
             onPressed: () {
               Navigator.push(
                 context,
@@ -41,7 +41,7 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
                 ),
               );
             },
-            icon: Icon(Icons.list),
+            child: const Text('View Database'),
           ),
         ],
       ),
@@ -49,18 +49,31 @@ class _CreateAccountPageState extends State<CreateAccountPage> {
         child: ValueListenableBuilder(
           valueListenable: userService.userNotifier,
           builder: (context, user, child) {
-            return Column(
-              children: [
-                TextField(
-                  controller: nameController,
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 400),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextField(
+                      controller: nameController,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Username',
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        createAccountViewModel.createUser(nameController.text);
+                        Navigator.pop(context);
+                      },
+                      child: const Text('Create Account'),
+                    ),
+                  ],
                 ),
-                ElevatedButton(
-                    onPressed: () {
-                      createAccountViewModel.createUser(nameController.text);
-                      Navigator.pop(context);
-                    },
-                    child: Text('Create Account')),
-              ],
+              ),
             );
           },
         ),

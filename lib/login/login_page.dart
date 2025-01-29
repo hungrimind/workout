@@ -1,8 +1,8 @@
+import 'package:demo/abstractions/sqlite_abstraction.dart';
 import 'package:demo/create_account/create_page.dart';
 import 'package:demo/database_page.dart';
-import 'package:demo/locator.dart';
-import 'package:demo/sqlite_abstraction.dart';
 import 'package:demo/user_service.dart';
+import 'package:demo/utils/locator.dart';
 import 'package:flutter/material.dart';
 
 import 'login_view_model.dart';
@@ -30,7 +30,7 @@ class _LoginPageState extends State<LoginPage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
         actions: [
-          IconButton(
+          TextButton(
             onPressed: () {
               Navigator.push(
                 context,
@@ -41,7 +41,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
               );
             },
-            icon: Icon(Icons.list),
+            child: const Text('View Database'),
           ),
         ],
       ),
@@ -49,33 +49,46 @@ class _LoginPageState extends State<LoginPage> {
         child: ValueListenableBuilder(
           valueListenable: loginViewModel.userNotifier,
           builder: (context, user, child) {
-            return Column(
-              children: [
-                TextField(
-                  controller: nameController,
-                ),
-                ElevatedButton(
-                    onPressed: () {
-                      try {
-                        loginViewModel.login(nameController.text);
-                      } catch (e) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text(e.toString())));
-                      }
-                    },
-                    child: Text('Login')),
-                TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => CreateAccountPage(),
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 400),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextField(
+                      controller: nameController,
+                      decoration: const InputDecoration(
+                        border: OutlineInputBorder(),
+                        labelText: 'Username',
                       ),
-                    );
-                  },
-                  child: Text('Create Account'),
+                    ),
+                    const SizedBox(height: 16),
+                    ElevatedButton(
+                      onPressed: () {
+                        try {
+                          loginViewModel.login(nameController.text);
+                        } catch (e) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(content: Text(e.toString())));
+                        }
+                      },
+                      child: const Text('Login'),
+                    ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CreateAccountPage(),
+                          ),
+                        );
+                      },
+                      child: const Text('Create Account'),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             );
           },
         ),

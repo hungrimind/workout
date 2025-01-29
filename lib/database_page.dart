@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'sqlite_abstraction.dart';
+import 'abstractions/sqlite_abstraction.dart';
 import 'user.dart';
 
 class DatabasePage extends StatefulWidget {

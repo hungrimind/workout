@@ -1,8 +1,8 @@
+import 'package:demo/abstractions/sqlite_abstraction.dart';
 import 'package:demo/database_page.dart';
-import 'package:demo/home_page_view_model.dart';
-import 'package:demo/locator.dart';
-import 'package:demo/sqlite_abstraction.dart';
+import 'package:demo/home/home_page_view_model.dart';
 import 'package:demo/user_service.dart';
+import 'package:demo/utils/locator.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
@@ -24,7 +24,7 @@ class _HomePageState extends State<HomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: const Text('Home Page'),
         actions: [
-          IconButton(
+          TextButton(
             onPressed: () {
               Navigator.push(
                 context,
@@ -35,7 +35,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               );
             },
-            icon: Icon(Icons.list),
+            child: const Text('View Database'),
           ),
         ],
       ),

@@ -1,9 +1,9 @@
-import 'package:demo/home_page.dart';
-import 'package:demo/locator.dart';
+import 'package:demo/abstractions/sqlite_abstraction.dart';
+import 'package:demo/home/home_page.dart';
 import 'package:demo/login/login_page.dart';
-import 'package:demo/sqlite_abstraction.dart';
 import 'package:demo/ui_library/theme/app_theme.dart';
 import 'package:demo/user_service.dart';
+import 'package:demo/utils/locator.dart';
 import 'package:flutter/material.dart';
 
 Future<void> main() async {

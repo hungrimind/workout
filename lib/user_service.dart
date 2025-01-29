@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:demo/sqlite_abstraction.dart';
+import 'package:demo/abstractions/sqlite_abstraction.dart';
 import 'package:demo/user.dart';
 import 'package:flutter/material.dart';
 import 'package:uuid/uuid.dart';
