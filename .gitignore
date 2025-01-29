@@ -4,6 +4,8 @@
 .dart_tool/
 .packages
 build/
+.idea
+.metadata
 # If you're building an application, you may want to check-in your pubspec.lock
 pubspec.lock
 
@@ -25,3 +27,4 @@ doc/api/
 
 .flutter-plugins
 .flutter-plugins-dependencies
+*.iml
