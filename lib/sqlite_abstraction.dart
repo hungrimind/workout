@@ -45,7 +45,7 @@ class SqliteAbstraction {
   void deleteUser(User user) {
     final deleteSessionQuery = 'DELETE FROM sessions WHERE userId = ?';
     db.execute(deleteSessionQuery, [user.id]);
-    
+
     final deleteUserQuery = 'DELETE FROM users WHERE id = ?';
     db.execute(deleteUserQuery, [user.id]);
   }
@@ -53,7 +53,7 @@ class SqliteAbstraction {
   void createSession(User user) {
     final deleteQuery = 'DELETE FROM sessions';
     db.execute(deleteQuery);
-    
+
     final insertQuery = 'INSERT INTO sessions (userId) VALUES (?)';
     db.execute(insertQuery, [user.id]);
   }
@@ -71,7 +71,7 @@ class SqliteAbstraction {
     return User(
         name: userResult[0]['name'] as String,
         id: userResult[0]['id'] as int,
-        uid: userResult[0]['uid'] as int);
+        uid: userResult[0]['uid'] as String);
   }
 
   void deleteSession(User user) {
@@ -86,7 +86,7 @@ class SqliteAbstraction {
         .map((row) => User(
             name: row['name'] as String,
             id: row['id'] as int,
-            uid: row['uid'] as int))
+            uid: row['uid'] as String))
         .firstOrNull;
   }
 
@@ -98,7 +98,7 @@ class SqliteAbstraction {
           .map((row) => User(
               name: row['name'] as String,
               id: row['id'] as int,
-              uid: row['uid'] as int))
+              uid: row['uid'] as String))
           .firstOrNull;
     });
   }
@@ -110,7 +110,7 @@ class SqliteAbstraction {
         .map((row) => User(
             name: row['name'] as String,
             id: row['id'] as int,
-            uid: row['uid'] as int))
+            uid: row['uid'] as String))
         .toList();
   }
 

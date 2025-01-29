@@ -3,5 +3,5 @@ class User {
 
   final int? id;
   final String name;
-  final int uid;
+  final String uid;
 }

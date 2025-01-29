@@ -1,8 +1,7 @@
-import 'package:content_machine/ui_library/theme/neutral_colors.dart';
+import 'package:demo/ui_library/mixins/loading_state_mixin.dart';
+import 'package:demo/ui_library/theme/neutral_colors.dart';
+import 'package:demo/ui_library/widgets/loading_indicator.dart';
 import 'package:flutter/material.dart';
-import 'package:content_machine/ui_library/widgets/loading_indicator.dart';
-import 'package:content_machine/ui_library/mixins/loading_state_mixin.dart';
-import 'package:content_machine/ui_library/constants/spacing.dart';
 
 class PrimaryButton extends StatefulWidget {
   final String text;
@@ -26,7 +25,7 @@ class _PrimaryButtonState extends State<PrimaryButton> with LoadingStateMixin {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    
+
     return ValueListenableBuilder<bool>(
       valueListenable: isLoading,
       builder: (context, loading, child) {
@@ -42,10 +41,11 @@ class _PrimaryButtonState extends State<PrimaryButton> with LoadingStateMixin {
                   borderRadius: BorderRadius.circular(4),
                   child: Container(
                     width: widget.width,
-                    padding: widget.padding ?? const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 12,
-                    ),
+                    padding: widget.padding ??
+                        const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 12,
+                        ),
                     child: Text(
                       widget.text,
                       style: TextStyle(
@@ -65,7 +65,9 @@ class _PrimaryButtonState extends State<PrimaryButton> with LoadingStateMixin {
                         child: LoadingIndicator(
                           size: 20,
                           strokeWidth: 2.5,
-                          color: Theme.of(context).extension<NeutralColors>()!.neutral50,
+                          color: Theme.of(context)
+                              .extension<NeutralColors>()!
+                              .neutral50,
                         ),
                       ),
                     ),
@@ -77,4 +79,4 @@ class _PrimaryButtonState extends State<PrimaryButton> with LoadingStateMixin {
       },
     );
   }
-} 
+}

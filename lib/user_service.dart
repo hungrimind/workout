@@ -1,9 +1,9 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:demo/sqlite_abstraction.dart';
 import 'package:demo/user.dart';
 import 'package:flutter/material.dart';
+import 'package:uuid/uuid.dart';
 
 class UserService {
   UserService({required SqliteAbstraction sqliteAbstraction})
@@ -28,8 +28,7 @@ class UserService {
 
   void createUser(String name) {
     _listenToUser(name);
-    _sqliteAbstraction
-        .createUser(User(name: name, uid: Random().nextInt(1000000)));
+    _sqliteAbstraction.createUser(User(name: name, uid: Uuid().v4()));
   }
 
   void createSession(String name) {
