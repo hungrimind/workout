@@ -58,6 +58,13 @@ class _DatabasePageState extends State<DatabasePage> {
                 return _buildUsersSection(theme, users);
               },
             ),
+            const SizedBox(height: 32),
+            ValueListenableBuilder<List<ExerciseRecord>>(
+              valueListenable: databaseViewModel.exercises,
+              builder: (context, exercises, _) {
+                return _buildExercisesSection(theme, exercises);
+              },
+            ),
           ],
         ),
       ),
@@ -155,6 +162,115 @@ class _DatabasePageState extends State<DatabasePage> {
     );
   }
 
+  Widget _buildExercisesSection(
+      ThemeData theme, List<ExerciseRecord> exercises) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Exercise Records',
+          style: theme.textTheme.headlineSmall,
+        ),
+        const SizedBox(height: 8),
+        if (exercises.isEmpty)
+          _buildEmptyView(
+            theme,
+            icon: Icons.fitness_center_outlined,
+            message: 'No exercise records in database',
+          )
+        else
+          Card(
+            child: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          'User',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          'Exercise',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        child: Text(
+                          'Reps',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Expanded(
+                        flex: 2,
+                        child: Text(
+                          'Date',
+                          style: theme.textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: exercises.length,
+                  itemBuilder: (context, index) {
+                    final exercise = exercises[index];
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 8.0,
+                      ),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            flex: 2,
+                            child: Text(exercise.userName),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Text(exercise.exercise),
+                          ),
+                          Expanded(
+                            child: Text(exercise.reps.toString()),
+                          ),
+                          Expanded(
+                            flex: 2,
+                            child: Text(
+                              _formatDate(exercise.timestamp),
+                            ),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+
+  String _formatDate(DateTime date) {
+    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} '
+        '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
+  }
+
   Widget _buildErrorView(ThemeData theme, Object? error) {
     return Center(
       child: Column(
@@ -172,7 +288,8 @@ class _DatabasePageState extends State<DatabasePage> {
     );
   }
 
-  Widget _buildEmptyView(ThemeData theme, {
+  Widget _buildEmptyView(
+    ThemeData theme, {
     required IconData icon,
     required String message,
   }) {
