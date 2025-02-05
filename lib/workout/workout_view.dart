@@ -3,6 +3,7 @@ import 'package:demo/core/database_view.dart';
 import 'package:demo/core/locator.dart';
 import 'package:demo/workout/workout_view_model.dart';
 import 'package:flutter/material.dart';
+import 'package:demo/core/database_abstraction.dart';
 
 class WorkoutView extends StatefulWidget {
   const WorkoutView({super.key});
@@ -12,8 +13,9 @@ class WorkoutView extends StatefulWidget {
 }
 
 class _WorkoutViewState extends State<WorkoutView> {
-  late final WorkoutViewModel homeViewModel = WorkoutViewModel(
+  late final WorkoutViewModel workoutViewModel = WorkoutViewModel(
     userService: locator<UserService>(),
+    database: locator<DatabaseAbstraction>(),
   );
 
   @override
@@ -21,7 +23,7 @@ class _WorkoutViewState extends State<WorkoutView> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: Text('Home'),
+        title: const Text('Workout Tracker'),
         actions: [
           TextButton(
             onPressed: () {
@@ -36,28 +38,89 @@ class _WorkoutViewState extends State<WorkoutView> {
           ),
         ],
       ),
-      body: Center(
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          ValueListenableBuilder(
+            valueListenable: workoutViewModel.userNotifier,
+            builder: (context, user, child) {
+              return Text(
+                'Welcome ${user?.name}',
+                style: Theme.of(context).textTheme.headlineMedium,
+              );
+            },
+          ),
+          const SizedBox(height: 20),
+          ...workoutViewModel.exercises
+              .map((exercise) => _buildExerciseCard(exercise)),
+          const SizedBox(height: 20),
+          TextButton(
+            onPressed: () {
+              workoutViewModel.logout();
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Logged out')),
+              );
+            },
+            child: const Text('Logout'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildExerciseCard(String exercise) {
+    return Card(
+      margin: const EdgeInsets.only(bottom: 16),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ValueListenableBuilder(
-              valueListenable: homeViewModel.userNotifier,
-              builder: (context, user, child) {
-                return Text('Welcome ${user?.name}',
-                    style: Theme.of(context).textTheme.headlineLarge);
-              },
+            Text(
+              exercise,
+              style: Theme.of(context).textTheme.titleLarge,
             ),
-            TextButton(
-              onPressed: () {
-                homeViewModel.logout();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Logged out'),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: ValueListenableBuilder(
+                    valueListenable: workoutViewModel.previousReps[exercise]!,
+                    builder: (context, previousReps, _) {
+                      return Text('Previous: $previousReps reps');
+                    },
                   ),
-                );
-              },
-              child: Text('Logout'),
-            )
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: ValueListenableBuilder(
+                    valueListenable: workoutViewModel.currentReps[exercise]!,
+                    builder: (context, currentReps, _) {
+                      return TextField(
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(
+                          labelText: 'Current Reps',
+                          border: OutlineInputBorder(),
+                        ),
+                        onChanged: (value) {
+                          final reps = int.tryParse(value) ?? 0;
+                          workoutViewModel.updateReps(exercise, reps);
+                        },
+                      );
+                    },
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.check),
+                  onPressed: () {
+                    final reps = workoutViewModel.currentReps[exercise]!.value;
+                    if (reps > 0) {
+                      workoutViewModel.saveExercise(exercise, reps);
+                    }
+                  },
+                ),
+              ],
+            ),
           ],
         ),
       ),
