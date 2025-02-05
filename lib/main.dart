@@ -22,12 +22,20 @@ Future<void> main() async {
         user_id INTEGER NOT NULL, 
         FOREIGN KEY (user_id) REFERENCES users(id)
       )''',
-      '''CREATE TABLE IF NOT EXISTS exercises (
-        id INTEGER PRIMARY KEY,
-        name TEXT,
-        reps INTEGER,
-        date TEXT,
-        userId INTEGER
+      '''CREATE TABLE IF NOT EXISTS workout_sessions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        date TEXT NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )''',
+      '''CREATE TABLE IF NOT EXISTS exercise_sets (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        session_id INTEGER NOT NULL,
+        exercise_name TEXT NOT NULL,
+        reps INTEGER NOT NULL,
+        set_number INTEGER NOT NULL,
+        date TEXT NOT NULL,
+        FOREIGN KEY (session_id) REFERENCES workout_sessions(id)
       )'''
     ],
     'my_app',

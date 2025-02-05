@@ -45,13 +45,6 @@ class _DataViewState extends State<DataView> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            ValueListenableBuilder<List<int>>(
-              valueListenable: databaseViewModel.sessions,
-              builder: (context, sessions, _) {
-                return _buildSessionsSection(theme, sessions);
-              },
-            ),
-            const SizedBox(height: 32),
             ValueListenableBuilder<List<User>>(
               valueListenable: databaseViewModel.users,
               builder: (context, users, _) {
@@ -59,51 +52,29 @@ class _DataViewState extends State<DataView> {
               },
             ),
             const SizedBox(height: 32),
-            ValueListenableBuilder<List<ExerciseRecord>>(
-              valueListenable: databaseViewModel.exercises,
-              builder: (context, exercises, _) {
-                return _buildExercisesSection(theme, exercises);
+            ValueListenableBuilder<List<AuthSession>>(
+              valueListenable: databaseViewModel.authSessions,
+              builder: (context, sessions, _) {
+                return _buildAuthSessionsSection(theme, sessions);
+              },
+            ),
+            const SizedBox(height: 32),
+            ValueListenableBuilder<List<WorkoutSession>>(
+              valueListenable: databaseViewModel.workoutSessions,
+              builder: (context, sessions, _) {
+                return _buildWorkoutSessionsSection(theme, sessions);
+              },
+            ),
+            const SizedBox(height: 32),
+            ValueListenableBuilder<List<ExerciseSet>>(
+              valueListenable: databaseViewModel.exerciseSets,
+              builder: (context, sets, _) {
+                return _buildExerciseSetsSection(theme, sets);
               },
             ),
           ],
         ),
       ),
-    );
-  }
-
-  Widget _buildSessionsSection(ThemeData theme, List<int> sessions) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Sessions',
-          style: theme.textTheme.headlineSmall,
-        ),
-        const SizedBox(height: 8),
-        if (sessions.isEmpty)
-          _buildEmptyView(
-            theme,
-            icon: Icons.schedule_outlined,
-            message: 'No sessions in database',
-          )
-        else
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: sessions.length,
-            itemBuilder: (context, index) {
-              final session = sessions[index];
-              return Card(
-                child: ListTile(
-                  title: Text(
-                    'Session user_id: $session',
-                    style: theme.textTheme.titleMedium,
-                  ),
-                ),
-              );
-            },
-          ),
-      ],
     );
   }
 
@@ -123,143 +94,169 @@ class _DataViewState extends State<DataView> {
             message: 'No users in database',
           )
         else
-          ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: users.length,
-            itemBuilder: (context, index) {
-              final user = users[index];
-              return ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: theme.colorScheme.primary,
-                  child: Text(
-                    user.name[0].toUpperCase(),
-                    style: TextStyle(
-                      color: theme.colorScheme.onPrimary,
-                    ),
-                  ),
-                ),
-                title: Text(
-                  user.name,
-                  style: theme.textTheme.titleMedium,
-                ),
-                subtitle: Text(
-                  'ID: ${user.id} - UID: ${user.uid}',
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.textTheme.bodySmall?.color,
-                  ),
-                ),
-                trailing: IconButton(
-                  icon: const Icon(Icons.delete_outline),
-                  onPressed: () {
-                    databaseViewModel.deleteUser(user);
-                  },
-                ),
-              );
-            },
+          Card(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: DataTable(
+                columns: const [
+                  DataColumn(label: Text('ID')),
+                  DataColumn(label: Text('Name')),
+                  DataColumn(label: Text('UID')),
+                  DataColumn(label: Text('Actions')),
+                ],
+                rows: users.map((user) {
+                  return DataRow(
+                    cells: [
+                      DataCell(Text(user.id.toString())),
+                      DataCell(Text(user.name)),
+                      DataCell(Text(user.uid)),
+                      DataCell(
+                        IconButton(
+                          icon: const Icon(Icons.delete_outline),
+                          onPressed: () {
+                            databaseViewModel.deleteUser(user);
+                          },
+                        ),
+                      ),
+                    ],
+                  );
+                }).toList(),
+              ),
+            ),
           ),
       ],
     );
   }
 
-  Widget _buildExercisesSection(
-      ThemeData theme, List<ExerciseRecord> exercises) {
+  Widget _buildAuthSessionsSection(
+      ThemeData theme, List<AuthSession> sessions) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          'Exercise Records',
+          'Auth Sessions',
           style: theme.textTheme.headlineSmall,
         ),
         const SizedBox(height: 8),
-        if (exercises.isEmpty)
+        if (sessions.isEmpty)
           _buildEmptyView(
             theme,
-            icon: Icons.fitness_center_outlined,
-            message: 'No exercise records in database',
+            icon: Icons.schedule_outlined,
+            message: 'No auth sessions in database',
           )
         else
           Card(
-            child: Column(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        flex: 2,
-                        child: Text(
-                          'User',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: Text(
-                          'Exercise',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        child: Text(
-                          'Reps',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: Text(
-                          'Date',
-                          style: theme.textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: DataTable(
+                columns: const [
+                  DataColumn(label: Text('ID')),
+                  DataColumn(label: Text('User ID')),
+                  DataColumn(label: Text('User Name')),
+                ],
+                rows: sessions.map((session) {
+                  return DataRow(
+                    cells: [
+                      DataCell(Text(session.id.toString())),
+                      DataCell(Text(session.userId.toString())),
+                      DataCell(Text(session.userName)),
                     ],
-                  ),
-                ),
-                ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: exercises.length,
-                  itemBuilder: (context, index) {
-                    final exercise = exercises[index];
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0,
-                        vertical: 8.0,
-                      ),
-                      child: Row(
-                        children: [
-                          Expanded(
-                            flex: 2,
-                            child: Text(exercise.userName),
-                          ),
-                          Expanded(
-                            flex: 2,
-                            child: Text(exercise.exercise),
-                          ),
-                          Expanded(
-                            child: Text(exercise.reps.toString()),
-                          ),
-                          Expanded(
-                            flex: 2,
-                            child: Text(
-                              _formatDate(exercise.timestamp),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
-              ],
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildWorkoutSessionsSection(
+      ThemeData theme, List<WorkoutSession> sessions) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Workout Sessions',
+          style: theme.textTheme.headlineSmall,
+        ),
+        const SizedBox(height: 8),
+        if (sessions.isEmpty)
+          _buildEmptyView(
+            theme,
+            icon: Icons.fitness_center_outlined,
+            message: 'No workout sessions in database',
+          )
+        else
+          Card(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: DataTable(
+                columns: const [
+                  DataColumn(label: Text('ID')),
+                  DataColumn(label: Text('User ID')),
+                  DataColumn(label: Text('User Name')),
+                  DataColumn(label: Text('Date')),
+                ],
+                rows: sessions.map((session) {
+                  return DataRow(
+                    cells: [
+                      DataCell(Text(session.id.toString())),
+                      DataCell(Text(session.userId.toString())),
+                      DataCell(Text(session.userName)),
+                      DataCell(Text(_formatDate(session.date))),
+                    ],
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildExerciseSetsSection(ThemeData theme, List<ExerciseSet> sets) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Exercise Sets',
+          style: theme.textTheme.headlineSmall,
+        ),
+        const SizedBox(height: 8),
+        if (sets.isEmpty)
+          _buildEmptyView(
+            theme,
+            icon: Icons.fitness_center_outlined,
+            message: 'No exercise sets in database',
+          )
+        else
+          Card(
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: DataTable(
+                columns: const [
+                  DataColumn(label: Text('ID')),
+                  DataColumn(label: Text('Session ID')),
+                  DataColumn(label: Text('User')),
+                  DataColumn(label: Text('Exercise')),
+                  DataColumn(label: Text('Set #')),
+                  DataColumn(label: Text('Reps')),
+                  DataColumn(label: Text('Date')),
+                ],
+                rows: sets.map((set) {
+                  return DataRow(
+                    cells: [
+                      DataCell(Text(set.id.toString())),
+                      DataCell(Text(set.sessionId.toString())),
+                      DataCell(Text('${set.userName}\n(ID: ${set.userId})')),
+                      DataCell(Text(set.exerciseName)),
+                      DataCell(Text(set.setNumber.toString())),
+                      DataCell(Text(set.reps.toString())),
+                      DataCell(Text(_formatDate(set.date))),
+                    ],
+                  );
+                }).toList(),
+              ),
             ),
           ),
       ],
