@@ -39,18 +39,41 @@ class _WorkoutViewState extends State<WorkoutView> {
         ],
       ),
       body: ListView(
-        padding: const EdgeInsets.all(16),
         children: [
-          ValueListenableBuilder(
-            valueListenable: workoutViewModel.userNotifier,
-            builder: (context, user, child) {
-              return Text(
-                'Welcome ${user?.name}',
-                style: Theme.of(context).textTheme.headlineMedium,
-              );
-            },
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Text(
+                    'Exercise',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: Text(
+                    'Previous Reps',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    'Current Reps',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 48), // Space for save button
+              ],
+            ),
           ),
-          const SizedBox(height: 20),
           ...workoutViewModel.exercises
               .map((exercise) => _buildExerciseCard(exercise)),
           const SizedBox(height: 20),
@@ -69,60 +92,55 @@ class _WorkoutViewState extends State<WorkoutView> {
   }
 
   Widget _buildExerciseCard(String exercise) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 16),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
+    TextEditingController repsController = TextEditingController();
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4, horizontal: 16),
+      child: Row(
+        children: [
+          Expanded(
+            flex: 2,
+            child: Text(
               exercise,
-              style: Theme.of(context).textTheme.titleLarge,
             ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(
-                  child: ValueListenableBuilder(
-                    valueListenable: workoutViewModel.previousReps[exercise]!,
-                    builder: (context, previousReps, _) {
-                      return Text('Previous: $previousReps reps');
-                    },
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: ValueListenableBuilder(
-                    valueListenable: workoutViewModel.currentReps[exercise]!,
-                    builder: (context, currentReps, _) {
-                      return TextField(
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(
-                          labelText: 'Current Reps',
-                          border: OutlineInputBorder(),
-                        ),
-                        onChanged: (value) {
-                          final reps = int.tryParse(value) ?? 0;
-                          workoutViewModel.updateReps(exercise, reps);
-                        },
-                      );
-                    },
-                  ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.check),
-                  onPressed: () {
-                    final reps = workoutViewModel.currentReps[exercise]!.value;
-                    if (reps > 0) {
-                      workoutViewModel.saveExercise(exercise, reps);
-                    }
-                  },
-                ),
-              ],
+          ),
+          Expanded(
+            child: ValueListenableBuilder(
+              valueListenable: workoutViewModel.previousReps[exercise]!,
+              builder: (context, previousReps, _) {
+                return Text('$previousReps');
+              },
             ),
-          ],
-        ),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: ValueListenableBuilder(
+              valueListenable: workoutViewModel.currentReps[exercise]!,
+              builder: (context, currentReps, _) {
+                return TextField(
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    contentPadding: EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 8,
+                    ),
+                  ),
+                  controller: repsController,
+                );
+              },
+            ),
+          ),
+          IconButton(
+            icon: const Icon(Icons.check),
+            onPressed: () {
+              final reps = int.tryParse(repsController.text) ?? 0;
+              if (reps > 0) {
+                workoutViewModel.saveExercise(exercise, reps);
+              }
+              repsController.clear();
+            },
+          ),
+        ],
       ),
     );
   }
