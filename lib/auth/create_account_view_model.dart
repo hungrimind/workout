@@ -9,7 +9,7 @@ class CreateAccountViewModel {
 
   User? createUser(String name) {
     try {
-      return _userService.createUser(User(name: name, uid: Uuid().v4()));
+      return _userService.signUp(User(name: name, uid: Uuid().v4()));
     } catch (e) {
       return null;
     }

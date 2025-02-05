@@ -12,7 +12,7 @@ class LoginViewModel {
 
   User? login(String name) {
     try {
-      return _userService.createSession(name);
+      return _userService.signIn(name);
     } catch (e) {
       return null;
     }

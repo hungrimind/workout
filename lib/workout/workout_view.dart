@@ -1,9 +1,9 @@
 import 'package:demo/auth/user_service.dart';
-import 'package:demo/core/database_view.dart';
+import 'package:demo/dataviewer/data_view.dart';
 import 'package:demo/core/locator.dart';
 import 'package:demo/workout/workout_view_model.dart';
 import 'package:flutter/material.dart';
-import 'package:demo/core/database_abstraction.dart';
+import 'package:demo/core/abstractions/database_abstraction.dart';
 
 class WorkoutView extends StatefulWidget {
   const WorkoutView({super.key});
@@ -30,7 +30,7 @@ class _WorkoutViewState extends State<WorkoutView> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => DatabasePage(),
+                  builder: (context) => DataView(),
                 ),
               );
             },

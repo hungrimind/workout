@@ -1,6 +1,6 @@
 import 'package:demo/auth/create_account_view_model.dart';
 import 'package:demo/auth/user_service.dart';
-import 'package:demo/core/database_view.dart';
+import 'package:demo/dataviewer/data_view.dart';
 import 'package:demo/core/locator.dart';
 import 'package:flutter/material.dart';
 
@@ -33,7 +33,7 @@ class _CreateAccountViewState extends State<CreateAccountView> {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const DatabasePage(),
+                  builder: (context) => const DataView(),
                 ),
               );
             },

@@ -1,22 +1,22 @@
-import 'package:demo/auth/user_service.dart';
-import 'package:demo/core/database_abstraction.dart';
-import 'package:demo/core/database_view_model.dart';
+import 'package:demo/auth/user_repository.dart';
+import 'package:demo/core/abstractions/database_abstraction.dart';
+import 'package:demo/dataviewer/data_view_model.dart';
 import 'package:demo/core/locator.dart';
 import 'package:flutter/material.dart';
 
 import '../auth/user.dart';
 
-class DatabasePage extends StatefulWidget {
-  const DatabasePage({super.key});
+class DataView extends StatefulWidget {
+  const DataView({super.key});
 
   @override
-  State<DatabasePage> createState() => _DatabasePageState();
+  State<DataView> createState() => _DataViewState();
 }
 
-class _DatabasePageState extends State<DatabasePage> {
-  late final DatabaseViewModel databaseViewModel = DatabaseViewModel(
+class _DataViewState extends State<DataView> {
+  late final DataViewModel databaseViewModel = DataViewModel(
+    userRepository: locator<UserRepository>(),
     databaseAbstraction: locator<DatabaseAbstraction>(),
-    userService: locator<UserService>(),
   );
 
   @override
@@ -269,23 +269,6 @@ class _DatabasePageState extends State<DatabasePage> {
   String _formatDate(DateTime date) {
     return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} '
         '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
-  }
-
-  Widget _buildErrorView(ThemeData theme, Object? error) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.error_outline, size: 48, color: Colors.red),
-          const SizedBox(height: 16),
-          Text(
-            'Error: $error',
-            style: theme.textTheme.titleMedium,
-            textAlign: TextAlign.center,
-          ),
-        ],
-      ),
-    );
   }
 
   Widget _buildEmptyView(

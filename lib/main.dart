@@ -1,6 +1,6 @@
 import 'package:demo/auth/login_view.dart';
 import 'package:demo/auth/user_service.dart';
-import 'package:demo/core/database_abstraction.dart';
+import 'package:demo/core/abstractions/database_abstraction.dart';
 import 'package:demo/core/locator.dart';
 import 'package:demo/workout/workout_view.dart';
 import 'package:flutter/material.dart';
@@ -11,17 +11,24 @@ Future<void> main() async {
 
   await locator<DatabaseAbstraction>().openDatabaseWithTables(
     [
-      'CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, uid INTEGER NOT NULL, admin INTEGER)',
-      'CREATE TABLE IF NOT EXISTS sessions (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER NOT NULL, FOREIGN KEY (user_id) REFERENCES users(id))',
-      '''
-      CREATE TABLE IF NOT EXISTS exercises (
+      '''CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, 
+        name TEXT NOT NULL, 
+        uid INTEGER NOT NULL, 
+        admin INTEGER
+      )''',
+      '''CREATE TABLE IF NOT EXISTS sessions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT, 
+        user_id INTEGER NOT NULL, 
+        FOREIGN KEY (user_id) REFERENCES users(id)
+      )''',
+      '''CREATE TABLE IF NOT EXISTS exercises (
         id INTEGER PRIMARY KEY,
         name TEXT,
         reps INTEGER,
         date TEXT,
         userId INTEGER
-      )
-    '''
+      )'''
     ],
     'my_app',
   );

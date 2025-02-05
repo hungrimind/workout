@@ -7,14 +7,12 @@ import 'package:flutter_test/flutter_test.dart';
 
 // Create two fake implementations for success and failure scenarios
 class FakeSuccessUserService extends Fake implements UserService {
-  @override
   User createUser(User user) {
     return User(id: 1, name: user.name, uid: user.uid);
   }
 }
 
 class FakeFailureUserService extends Fake implements UserService {
-  @override
   User createUser(User user) {
     throw Exception('Failed to create user');
   }
