@@ -26,7 +26,7 @@ class _CreateAccountViewState extends State<CreateAccountView> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text('Create Account'),
+        title: const Text('Create An Account'),
         actions: [
           TextButton(
             onPressed: () {

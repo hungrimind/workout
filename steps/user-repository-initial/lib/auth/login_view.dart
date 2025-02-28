@@ -1,24 +1,25 @@
-import 'package:demo/auth/create_account_view_model.dart';
+import 'package:demo/auth/create_account_view.dart';
+import 'package:demo/auth/login_view_model.dart';
 import 'package:demo/auth/user_service.dart';
 import 'package:demo/core/locator.dart';
 import 'package:demo/dataviewer/data_view.dart';
 import 'package:flutter/material.dart';
 
-class CreateAccountView extends StatefulWidget {
-  const CreateAccountView({super.key});
+class LoginView extends StatefulWidget {
+  const LoginView({super.key});
 
   @override
-  State<CreateAccountView> createState() => _CreateAccountViewState();
+  State<LoginView> createState() => _LoginViewState();
 }
 
-class _CreateAccountViewState extends State<CreateAccountView> {
-  late final CreateAccountViewModel createAccountViewModel;
+class _LoginViewState extends State<LoginView> {
+  late final LoginViewModel loginViewModel;
   late final TextEditingController nameController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    createAccountViewModel = CreateAccountViewModel(locator<UserService>());
+    loginViewModel = LoginViewModel(userService: locator<UserService>());
   }
 
   @override
@@ -26,14 +27,14 @@ class _CreateAccountViewState extends State<CreateAccountView> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        title: const Text('Create An Account'),
+        title: const Text('Workout Tracker'),
         actions: [
           TextButton(
             onPressed: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const DataView(),
+                  builder: (context) => DataView(),
                 ),
               );
             },
@@ -64,25 +65,17 @@ class _CreateAccountViewState extends State<CreateAccountView> {
                 onPressed: () {
                   if (nameController.text.isNotEmpty) {
                     final userCreated =
-                        createAccountViewModel.createUser(nameController.text);
-
+                        loginViewModel.login(nameController.text);
                     if (userCreated == null) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('User not created'),
+                          content: Text('No user associated with this name'),
                         ),
                       );
                       return;
                     }
 
                     nameController.clear();
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        content: Text(
-                            'User created, click database viewer in top right to see users'),
-                      ),
-                    );
-                    Navigator.of(context).pop();
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
@@ -91,8 +84,18 @@ class _CreateAccountViewState extends State<CreateAccountView> {
                     );
                   }
                 },
-                child: Text('Create Account'),
+                child: Text('Login'),
               ),
+              TextButton(
+                child: const Text('Create Account'),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const CreateAccountView()),
+                  );
+                },
+              )
             ],
           ),
         ),
