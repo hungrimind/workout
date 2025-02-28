@@ -1,4 +1,4 @@
-import 'package:demo/core/abstractions/sqlite/sqlite3.dart' show openSqliteDb;
+import 'package:demo/core/sqlite/sqlite3.dart' show openSqliteDb;
 import 'package:sqlite3/common.dart' show CommonDatabase;
 
 class DatabaseUpdate {

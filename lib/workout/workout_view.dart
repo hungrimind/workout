@@ -21,16 +21,9 @@ class _WorkoutViewState extends State<WorkoutView> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F5),
       appBar: AppBar(
-        backgroundColor: Theme.of(context).primaryColor.withOpacity(0.1),
-        elevation: 0,
         title: const Text(
           'Workout Tracker',
-          style: TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.w600,
-          ),
         ),
         actions: [
           TextButton(
@@ -64,7 +57,7 @@ class _WorkoutViewState extends State<WorkoutView> {
       padding: const EdgeInsets.only(bottom: 12),
       child: Card(
         elevation: 0,
-        color: Colors.white,
+        color: Colors.grey[100],
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
         ),

@@ -1,8 +1,8 @@
 import 'package:demo/auth/create_account_view.dart';
 import 'package:demo/auth/login_view_model.dart';
 import 'package:demo/auth/user_service.dart';
-import 'package:demo/dataviewer/data_view.dart';
 import 'package:demo/core/locator.dart';
+import 'package:demo/dataviewer/data_view.dart';
 import 'package:flutter/material.dart';
 
 class LoginView extends StatefulWidget {
