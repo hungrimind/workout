@@ -42,6 +42,11 @@ class FakeUserService extends Fake implements UserService {
 }
 
 class MockWorkoutRepository implements WorkoutRepository {
+  Map<String, ValueNotifier<List<int>>> exerciseSets = {
+    'Squat': ValueNotifier<List<int>>([10, 12, 15]),
+    'Deadlift': ValueNotifier<List<int>>([8, 10]),
+  };
+
   @override
   Future<int?> createWorkoutSession(int userId, DateTime date) async {
     return 123;
@@ -77,14 +82,25 @@ void main() {
       // Verify text field is cleared (success case)
       expect(find.text('Workout Tracker'), findsOneWidget);
     });
-    testWidgets('Shows snackbar and calls deleteSession when logging out',
+
+    testWidgets('Displays exercise cards for each exercise set',
         (tester) async {
       await tester.pumpWidget(MaterialApp(
         home: WorkoutView(),
       ));
 
-      // Verify initial state shows user name
-      expect(find.text('Welcome Test User'), findsOneWidget);
+      expect(find.byType(ExerciseCard), findsNWidgets(4));
+      expect(find.text('Push-ups: []'), findsOneWidget);
+      expect(find.text('Pull-ups: []'), findsOneWidget);
+      expect(find.text('Sit-ups: []'), findsOneWidget);
+      expect(find.text('Squats: []'), findsOneWidget);
+    });
+
+    testWidgets('Shows snackbar and calls deleteSession when logging out',
+        (tester) async {
+      await tester.pumpWidget(MaterialApp(
+        home: WorkoutView(),
+      ));
 
       // Tap logout button
       await tester.tap(find.text('Logout'));
