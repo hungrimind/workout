@@ -39,25 +39,28 @@ class _WorkoutViewState extends State<WorkoutView> {
         ],
       ),
       body: Center(
-        child: Column(
-          children: [
-            ...workoutViewModel.exerciseSets.entries
-                .map((entry) => ExerciseCard(
-                      name: entry.key,
-                      exercise: entry.value,
-                    )),
-            TextButton(
-              onPressed: () {
-                workoutViewModel.logout();
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('Logged out'),
-                  ),
-                );
-              },
-              child: Text('Logout'),
-            )
-          ],
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              ...workoutViewModel.exerciseSets.entries
+                  .map((entry) => ExerciseCard(
+                        name: entry.key,
+                        exercise: entry.value,
+                      )),
+              const SizedBox(height: 16),
+              TextButton(
+                onPressed: () {
+                  workoutViewModel.logout();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Logged out'),
+                    ),
+                  );
+                },
+                child: Text('Logout'),
+              )
+            ],
+          ),
         ),
       ),
     );
@@ -79,9 +82,7 @@ class ExerciseCard extends StatelessWidget {
     return ValueListenableBuilder(
       valueListenable: exercise,
       builder: (context, value, child) {
-        return Card(
-          child: Text('$name: $value'),
-        );
+        return Text('$name: $value');
       },
     );
   }
