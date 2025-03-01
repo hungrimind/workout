@@ -182,7 +182,6 @@ class ExerciseSet {
   final String exerciseName;
   final int reps;
   final int setNumber;
-  final DateTime date;
 
   ExerciseSet({
     required this.id,
@@ -192,7 +191,6 @@ class ExerciseSet {
     required this.exerciseName,
     required this.reps,
     required this.setNumber,
-    required this.date,
   });
 
   factory ExerciseSet.fromJson(Map<String, dynamic> json) {
@@ -204,7 +202,6 @@ class ExerciseSet {
       exerciseName: json['exercise_name'] as String,
       reps: json['reps'] as int,
       setNumber: json['set_number'] as int,
-      date: DateTime.parse(json['date'] as String),
     );
   }
 }

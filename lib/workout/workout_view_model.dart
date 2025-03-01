@@ -121,17 +121,15 @@ class WorkoutViewModel {
             session_id, 
             exercise_name, 
             reps, 
-            set_number,
-            date
+            set_number
           ) 
-          VALUES (?, ?, ?, ?, ?)
+          VALUES (?, ?, ?, ?)
           ''',
           [
             sessionId,
             exercise,
             sets[i],
             i + 1,
-            DateTime.now().toIso8601String(),
           ],
         );
       }
