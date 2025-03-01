@@ -34,7 +34,6 @@ Future<void> main() async {
         exercise_name TEXT NOT NULL,
         reps INTEGER NOT NULL,
         set_number INTEGER NOT NULL,
-        date TEXT NOT NULL,
         FOREIGN KEY (session_id) REFERENCES workout_sessions(id)
       )'''
     ],
