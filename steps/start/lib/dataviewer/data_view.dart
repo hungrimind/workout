@@ -1,4 +1,4 @@
-import 'package:demo/auth/user_repository.dart';
+import 'package:demo/auth/user_service.dart';
 import 'package:demo/core/abstractions/database_abstraction.dart';
 import 'package:demo/dataviewer/data_view_model.dart';
 import 'package:demo/core/locator.dart';
@@ -15,7 +15,7 @@ class DataView extends StatefulWidget {
 
 class _DataViewState extends State<DataView> {
   late final DataViewModel databaseViewModel = DataViewModel(
-    userRepository: locator<UserRepository>(),
+    userService: locator<UserService>(),
     databaseAbstraction: locator<DatabaseAbstraction>(),
   );
 

@@ -1,19 +1,19 @@
 import 'dart:async';
 
 import 'package:demo/auth/user.dart';
-import 'package:demo/auth/user_repository.dart';
+import 'package:demo/auth/user_service.dart';
 import 'package:demo/core/abstractions/database_abstraction.dart';
 import 'package:flutter/foundation.dart';
 
 class DataViewModel {
   DataViewModel({
     required DatabaseAbstraction databaseAbstraction,
-    required UserRepository userRepository,
+    required UserService userService,
   })  : _databaseAbstraction = databaseAbstraction,
-        _userRepository = userRepository;
+        _userService = userService;
 
   final DatabaseAbstraction _databaseAbstraction;
-  final UserRepository _userRepository;
+  final UserService _userService;
   final ValueNotifier<List<User>> users = ValueNotifier<List<User>>([]);
   final ValueNotifier<List<AuthSession>> authSessions =
       ValueNotifier<List<AuthSession>>([]);
@@ -127,7 +127,7 @@ class DataViewModel {
   }
 
   void deleteUser(User user) {
-    _userRepository.deleteUser(user);
+    _userService.deleteUser(user);
   }
 }
 
