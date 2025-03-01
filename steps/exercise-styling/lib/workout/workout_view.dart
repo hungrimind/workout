@@ -38,14 +38,16 @@ class _WorkoutViewState extends State<WorkoutView> {
           ),
         ],
       ),
-      body: Center(
+      body: SingleChildScrollView(
         child: Column(
           children: [
             ...workoutViewModel.exerciseSets.entries
                 .map((entry) => ExerciseCard(
                       name: entry.key,
                       exercise: entry.value,
+                      workoutViewModel: workoutViewModel,
                     )),
+            const SizedBox(height: 16),
             TextButton(
               onPressed: () {
                 workoutViewModel.logout();
@@ -69,36 +71,65 @@ class ExerciseCard extends StatelessWidget {
     super.key,
     required this.exercise,
     required this.name,
+    required this.workoutViewModel,
   });
 
   final ValueNotifier<List<int>> exercise;
   final String name;
   final TextEditingController repsController = TextEditingController();
+  final WorkoutViewModel workoutViewModel;
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
       valueListenable: exercise,
       builder: (context, value, child) {
         return Card(
-          child: Column(
-            children: [
-              Text('$name: $value'),
-              Row(
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      final reps = int.tryParse(repsController.text) ?? 0;
-                      if (reps > 0) {
-                        repsController.clear();
-                      }
-                    },
-                    icon: const Icon(Icons.add_circle),
-                    color: Colors.green,
-                    iconSize: 32,
+          elevation: 0,
+          margin: const EdgeInsets.all(8),
+          color: Colors.grey[50],
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w500,
                   ),
-                ],
-              ),
-            ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        controller: repsController,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          hintText: 'Enter reps',
+                          filled: true,
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    IconButton(
+                      onPressed: () {
+                        repsController.clear();
+                      },
+                      icon: const Icon(Icons.add),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
         );
       },

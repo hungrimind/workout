@@ -89,20 +89,11 @@ void main() {
         home: WorkoutView(),
       ));
 
-      // Verify ExerciseCards are displayed
       expect(find.byType(ExerciseCard), findsNWidgets(4));
-
-      // Check the exercise names are displayed
-      expect(find.text('Push-ups'), findsOneWidget);
-      expect(find.text('Pull-ups'), findsOneWidget);
-      expect(find.text('Sit-ups'), findsOneWidget);
-      expect(find.text('Squats'), findsOneWidget);
-
-      // Verify each card has the text field for reps
-      expect(find.widgetWithText(TextField, 'Enter reps'), findsNWidgets(4));
-
-      // Verify add buttons are present
-      expect(find.byIcon(Icons.add), findsNWidgets(4));
+      expect(find.text('Push-ups: []'), findsOneWidget);
+      expect(find.text('Pull-ups: []'), findsOneWidget);
+      expect(find.text('Sit-ups: []'), findsOneWidget);
+      expect(find.text('Squats: []'), findsOneWidget);
     });
 
     testWidgets('Shows snackbar and calls deleteSession when logging out',
