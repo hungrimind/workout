@@ -12,7 +12,7 @@ class WorkoutView extends StatefulWidget {
 }
 
 class _WorkoutViewState extends State<WorkoutView> {
-  late final WorkoutViewModel homeViewModel = WorkoutViewModel(
+  late final WorkoutViewModel workoutViewModel = WorkoutViewModel(
     userService: locator<UserService>(),
   );
 
@@ -41,7 +41,7 @@ class _WorkoutViewState extends State<WorkoutView> {
           mainAxisSize: MainAxisSize.min,
           children: [
             ValueListenableBuilder(
-              valueListenable: homeViewModel.userNotifier,
+              valueListenable: workoutViewModel.userNotifier,
               builder: (context, user, child) {
                 return Text('Welcome ${user?.name}',
                     style: Theme.of(context).textTheme.headlineLarge);
@@ -49,7 +49,7 @@ class _WorkoutViewState extends State<WorkoutView> {
             ),
             TextButton(
               onPressed: () {
-                homeViewModel.logout();
+                workoutViewModel.logout();
                 ScaffoldMessenger.of(context).showSnackBar(
                   SnackBar(
                     content: Text('Logged out'),
