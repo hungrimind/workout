@@ -61,6 +61,10 @@ class WorkoutViewModel {
         );
       }
     }
+
+    for (var exercise in exercises) {
+      exerciseSets[exercise]!.value = [];
+    }
   }
 
   void logout() {

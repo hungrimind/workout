@@ -54,6 +54,10 @@ class WorkoutViewModel {
         // TODO: Save sets to the database
       }
     }
+
+    for (var exercise in exercises) {
+      exerciseSets[exercise]!.value = [];
+    }
   }
 
   void logout() {
