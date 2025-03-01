@@ -1,10 +1,10 @@
-import 'package:demo/auth/user_service.dart';
+import 'package:demo/auth/user_repository.dart';
 import 'package:demo/core/abstractions/database_abstraction.dart';
 import 'package:demo/dataviewer/data_view_model.dart';
 import 'package:demo/core/locator.dart';
 import 'package:flutter/material.dart';
 
-import '../../auth/user.dart';
+import '../auth/user.dart';
 
 class DataView extends StatefulWidget {
   const DataView({super.key});
@@ -15,7 +15,7 @@ class DataView extends StatefulWidget {
 
 class _DataViewState extends State<DataView> {
   late final DataViewModel databaseViewModel = DataViewModel(
-    userService: locator<UserService>(),
+    userRepository: locator<UserRepository>(),
     databaseAbstraction: locator<DatabaseAbstraction>(),
   );
 
@@ -195,7 +195,6 @@ class _DataViewState extends State<DataView> {
                   DataColumn(label: Text('ID')),
                   DataColumn(label: Text('User ID')),
                   DataColumn(label: Text('User Name')),
-                  DataColumn(label: Text('Date')),
                 ],
                 rows: sessions.map((session) {
                   return DataRow(
@@ -203,7 +202,6 @@ class _DataViewState extends State<DataView> {
                       DataCell(Text(session.id.toString())),
                       DataCell(Text(session.userId.toString())),
                       DataCell(Text(session.userName)),
-                      DataCell(Text(_formatDate(session.date))),
                     ],
                   );
                 }).toList(),
@@ -241,7 +239,6 @@ class _DataViewState extends State<DataView> {
                   DataColumn(label: Text('Exercise')),
                   DataColumn(label: Text('Set #')),
                   DataColumn(label: Text('Reps')),
-                  DataColumn(label: Text('Date')),
                 ],
                 rows: sets.map((set) {
                   return DataRow(
@@ -252,7 +249,6 @@ class _DataViewState extends State<DataView> {
                       DataCell(Text(set.exerciseName)),
                       DataCell(Text(set.setNumber.toString())),
                       DataCell(Text(set.reps.toString())),
-                      DataCell(Text(_formatDate(set.date))),
                     ],
                   );
                 }).toList(),
@@ -261,11 +257,6 @@ class _DataViewState extends State<DataView> {
           ),
       ],
     );
-  }
-
-  String _formatDate(DateTime date) {
-    return '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')} '
-        '${date.hour.toString().padLeft(2, '0')}:${date.minute.toString().padLeft(2, '0')}';
   }
 
   Widget _buildEmptyView(

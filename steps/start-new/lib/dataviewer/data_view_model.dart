@@ -1,19 +1,19 @@
 import 'dart:async';
 
 import 'package:demo/auth/user.dart';
-import 'package:demo/auth/user_service.dart';
+import 'package:demo/auth/user_repository.dart';
 import 'package:demo/core/abstractions/database_abstraction.dart';
 import 'package:flutter/foundation.dart';
 
 class DataViewModel {
   DataViewModel({
     required DatabaseAbstraction databaseAbstraction,
-    required UserService userService,
+    required UserRepository userRepository,
   })  : _databaseAbstraction = databaseAbstraction,
-        _userService = userService;
+        _userRepository = userRepository;
 
   final DatabaseAbstraction _databaseAbstraction;
-  final UserService _userService;
+  final UserRepository _userRepository;
   final ValueNotifier<List<User>> users = ValueNotifier<List<User>>([]);
   final ValueNotifier<List<AuthSession>> authSessions =
       ValueNotifier<List<AuthSession>>([]);
@@ -127,7 +127,7 @@ class DataViewModel {
   }
 
   void deleteUser(User user) {
-    _userService.deleteUser(user);
+    _userRepository.deleteUser(user);
   }
 }
 
@@ -182,7 +182,6 @@ class ExerciseSet {
   final String exerciseName;
   final int reps;
   final int setNumber;
-  final DateTime date;
 
   ExerciseSet({
     required this.id,
@@ -192,7 +191,6 @@ class ExerciseSet {
     required this.exerciseName,
     required this.reps,
     required this.setNumber,
-    required this.date,
   });
 
   factory ExerciseSet.fromJson(Map<String, dynamic> json) {
@@ -204,7 +202,6 @@ class ExerciseSet {
       exerciseName: json['exercise_name'] as String,
       reps: json['reps'] as int,
       setNumber: json['set_number'] as int,
-      date: DateTime.parse(json['date'] as String),
     );
   }
 }
