@@ -38,29 +38,27 @@ class _WorkoutViewState extends State<WorkoutView> {
           ),
         ],
       ),
-      body: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            children: [
-              ...workoutViewModel.exerciseSets.entries
-                  .map((entry) => ExerciseCard(
-                        name: entry.key,
-                        exercise: entry.value,
-                      )),
-              const SizedBox(height: 16),
-              TextButton(
-                onPressed: () {
-                  workoutViewModel.logout();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Logged out'),
-                    ),
-                  );
-                },
-                child: Text('Logout'),
-              )
-            ],
-          ),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            ...workoutViewModel.exerciseSets.entries
+                .map((entry) => ExerciseCard(
+                      name: entry.key,
+                      exercise: entry.value,
+                    )),
+            const SizedBox(height: 16),
+            TextButton(
+              onPressed: () {
+                workoutViewModel.logout();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text('Logged out'),
+                  ),
+                );
+              },
+              child: Text('Logout'),
+            )
+          ],
         ),
       ),
     );
