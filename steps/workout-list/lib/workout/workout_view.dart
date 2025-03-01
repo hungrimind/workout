@@ -80,26 +80,7 @@ class ExerciseCard extends StatelessWidget {
       valueListenable: exercise,
       builder: (context, value, child) {
         return Card(
-          child: Column(
-            children: [
-              Text('$name: $value'),
-              Row(
-                children: [
-                  IconButton(
-                    onPressed: () {
-                      final reps = int.tryParse(repsController.text) ?? 0;
-                      if (reps > 0) {
-                        repsController.clear();
-                      }
-                    },
-                    icon: const Icon(Icons.add_circle),
-                    color: Colors.green,
-                    iconSize: 32,
-                  ),
-                ],
-              ),
-            ],
-          ),
+          child: Text('$name: $value'),
         );
       },
     );
