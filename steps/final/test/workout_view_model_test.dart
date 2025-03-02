@@ -92,6 +92,18 @@ class MockWorkoutRepository implements WorkoutRepository {
   bool createWorkoutSessionCalled = false;
   List<Map<String, dynamic>> savedExerciseSets = [];
 
+  // Test data for previous workouts
+  List<Map<String, dynamic>> previousWorkouts = [];
+  Map<String, List<Map<String, dynamic>>> exerciseSetsData = {};
+
+  void setupPreviousWorkouts(List<Map<String, dynamic>> workouts) {
+    previousWorkouts = workouts;
+  }
+
+  void setupExerciseSetsData(String exercise, List<Map<String, dynamic>> sets) {
+    exerciseSetsData[exercise] = sets;
+  }
+
   @override
   Future<int?> createWorkoutSession(int userId, DateTime date) async {
     createWorkoutSessionCalled = true;
@@ -108,6 +120,18 @@ class MockWorkoutRepository implements WorkoutRepository {
       'setNumber': setNumber,
     });
     return true;
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getExerciseSets(
+      int workoutId, String exerciseName) async {
+    return exerciseSetsData[exerciseName] ?? [];
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> getPreviousWorkoutSessions(
+      int userId) async {
+    return previousWorkouts;
   }
 }
 
@@ -201,6 +225,13 @@ void main() {
           equals(1),
           reason:
               'Different exercise types should be correctly categorized in workout history');
+
+      // verify the previous sets are updated with the recently finished sets
+      expect(viewModel.previousSessionSets['Push-ups']!.value, equals([10, 12]),
+          reason: 'Previous push-up sets should be updated correctly');
+      expect(viewModel.previousSessionSets['Squats']!.value, equals([15]),
+          reason:
+              'Previous squat sets should be updated correctly with the recently finished set');
     });
 
     test('finishWorkout should not save to database if no sets exist',
@@ -225,6 +256,52 @@ void main() {
       expect(mockUserService.signOutCalled, isTrue,
           reason:
               'User session should end completely when logout is requested');
+    });
+
+    test(
+        '_loadPreviousExercises should load exercise sets from previous workout session',
+        () async {
+      // Arrange
+      // Set up a previous workout session
+      mockWorkoutRepository.setupPreviousWorkouts([
+        {'id': 123, 'date': '2023-06-10 10:00:00'},
+      ]);
+
+      // Set up exercise sets for the previous workout
+      mockWorkoutRepository.setupExerciseSetsData('Push-ups', [
+        {'reps': 10, 'set_number': 1},
+        {'reps': 12, 'set_number': 2}
+      ]);
+      mockWorkoutRepository.setupExerciseSetsData('Pull-ups', [
+        {'reps': 8, 'set_number': 1}
+      ]);
+      mockWorkoutRepository.setupExerciseSetsData('Squats', [
+        {'reps': 15, 'set_number': 1},
+        {'reps': 15, 'set_number': 2},
+        {'reps': 15, 'set_number': 3}
+      ]);
+
+      // Create a new view model to trigger the _loadPreviousExercises method
+      final newViewModel = WorkoutViewModel(
+        userService: mockUserService,
+        workoutRepository: mockWorkoutRepository,
+      );
+
+      // We need to wait for the async operations to complete
+      // Use a small delay to allow async operations to finish
+      await Future.delayed(Duration(milliseconds: 100));
+
+      // Assert
+      expect(
+          newViewModel.previousSessionSets['Push-ups']!.value, equals([10, 12]),
+          reason: 'Previous push-up sets should be loaded correctly');
+      expect(newViewModel.previousSessionSets['Pull-ups']!.value, equals([8]),
+          reason: 'Previous pull-up sets should be loaded correctly');
+      expect(newViewModel.previousSessionSets['Squats']!.value,
+          equals([15, 15, 15]),
+          reason: 'Previous squat sets should be loaded correctly');
+      expect(newViewModel.previousSessionSets['Sit-ups']!.value, isEmpty,
+          reason: 'Exercises with no previous sets should have empty lists');
     });
   });
 }

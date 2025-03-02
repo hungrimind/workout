@@ -38,7 +38,7 @@ class _WorkoutViewState extends State<WorkoutView> {
           ),
         ],
       ),
-      body: Center(
+      body: SingleChildScrollView(
         child: Column(
           children: [
             ...workoutViewModel.exerciseSets.entries
@@ -97,6 +97,7 @@ class ExerciseCard extends StatelessWidget {
       builder: (context, value, child) {
         return Card(
           elevation: 0,
+          margin: const EdgeInsets.all(8),
           color: Colors.grey[50],
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
@@ -116,21 +117,31 @@ class ExerciseCard extends StatelessWidget {
                         fontWeight: FontWeight.w500,
                       ),
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Colors.blue[50],
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        'Previous: ${exercise.value.join(", ")} reps',
-                        style: TextStyle(
-                          color: Colors.blue[700],
-                        ),
-                      ),
+                    ValueListenableBuilder(
+                      valueListenable:
+                          workoutViewModel.previousSessionSets[name]!,
+                      builder: (context, previousSets, _) {
+                        if (previousSets.isEmpty) {
+                          return const SizedBox.shrink();
+                        }
+                        return Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.blue[50],
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            'Previous: ${previousSets.join(", ")} reps',
+                            style: TextStyle(
+                              color: Colors.blue[700],
+                              fontSize: 14,
+                            ),
+                          ),
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -138,20 +149,24 @@ class ExerciseCard extends StatelessWidget {
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
-                    children: List.generate(exercise.value.length, (index) {
+                    children: List.generate(value.length, (index) {
                       return Padding(
                         padding: const EdgeInsets.only(right: 8, bottom: 8),
                         child: Container(
                           padding: const EdgeInsets.only(left: 12),
                           decoration: BoxDecoration(
-                            color: Colors.grey[200],
+                            color: _getSetColor(
+                              value[index],
+                              workoutViewModel.previousSessionSets[name]!.value,
+                              index,
+                            ),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                'Set ${index + 1}: ${exercise.value[index]} reps',
+                                'Set ${index + 1}: ${value[index]} reps',
                                 style: const TextStyle(
                                   fontSize: 16,
                                   color: Colors.black87,
@@ -193,15 +208,13 @@ class ExerciseCard extends StatelessWidget {
                     const SizedBox(width: 12),
                     IconButton(
                       onPressed: () {
-                        final reps = int.tryParse(repsController.text) ?? 0;
-                        if (reps > 0) {
+                        if (repsController.text.isNotEmpty) {
+                          workoutViewModel.addSet(
+                              name, int.parse(repsController.text));
                           repsController.clear();
-                          workoutViewModel.addSet(name, reps);
                         }
                       },
-                      icon: const Icon(Icons.add_circle),
-                      color: Colors.green,
-                      iconSize: 32,
+                      icon: const Icon(Icons.add),
                     ),
                   ],
                 ),
@@ -211,5 +224,19 @@ class ExerciseCard extends StatelessWidget {
         );
       },
     );
+  }
+
+  Color _getSetColor(int currentReps, List<int> previousSets, int setIndex) {
+    // If there are no previous sets or this is a new set number, it's an improvement
+    if (previousSets.isEmpty || setIndex >= previousSets.length) {
+      return Colors.green[50]!;
+    }
+
+    // Compare with the corresponding set from previous session
+    if (currentReps >= previousSets[setIndex]) {
+      return Colors.green[50]!;
+    } else {
+      return Colors.red[50]!;
+    }
   }
 }

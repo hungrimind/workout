@@ -55,4 +55,22 @@ class WorkoutRepository {
       return false;
     }
   }
+
+  Future<List<Map<String, dynamic>>> getPreviousWorkoutSessions(
+      int userId) async {
+    final results = _databaseAbstraction.dbSelect(
+      'SELECT * FROM workout_sessions WHERE user_id = ? ORDER BY date DESC LIMIT 1',
+      [userId],
+    );
+    return results;
+  }
+
+  Future<List<Map<String, dynamic>>> getExerciseSets(
+      int workoutId, String exerciseName) async {
+    final results = _databaseAbstraction.dbSelect(
+      'SELECT * FROM exercise_sets WHERE session_id = ? AND exercise_name = ? ORDER BY set_number ASC',
+      [workoutId, exerciseName],
+    );
+    return results;
+  }
 }
