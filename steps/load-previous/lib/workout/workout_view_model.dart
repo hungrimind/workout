@@ -94,6 +94,8 @@ class WorkoutViewModel {
     }
 
     for (var exercise in exercises) {
+      previousSessionSets[exercise]!.value =
+          List.from(exerciseSets[exercise]!.value);
       exerciseSets[exercise]!.value = [];
     }
   }

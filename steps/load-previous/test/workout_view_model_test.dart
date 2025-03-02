@@ -225,6 +225,13 @@ void main() {
           equals(1),
           reason:
               'Different exercise types should be correctly categorized in workout history');
+
+      // verify the previous sets are updated with the recently finished sets
+      expect(viewModel.previousSessionSets['Push-ups']!.value, equals([10, 12]),
+          reason: 'Previous push-up sets should be updated correctly');
+      expect(viewModel.previousSessionSets['Squats']!.value, equals([15]),
+          reason:
+              'Previous squat sets should be updated correctly with the recently finished set');
     });
 
     test('finishWorkout should not save to database if no sets exist',
