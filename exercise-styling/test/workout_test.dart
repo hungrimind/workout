@@ -111,8 +111,16 @@ void main() {
         home: WorkoutView(),
       ));
 
+      // Find the logout button
+      final logoutButton = find.text('Logout');
+      expect(logoutButton, findsOneWidget);
+
+      // Ensure the button is visible by scrolling to it
+      await tester.ensureVisible(logoutButton);
+      await tester.pumpAndSettle();
+
       // Tap logout button
-      await tester.tap(find.text('Logout'));
+      await tester.tap(logoutButton);
       await tester.pump();
 
       // Verify snackbar is shown
