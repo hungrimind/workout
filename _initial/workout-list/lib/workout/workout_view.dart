@@ -41,11 +41,6 @@ class _WorkoutViewState extends State<WorkoutView> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            ...workoutViewModel.exerciseSets.entries
-                .map((entry) => ExerciseCard(
-                      name: entry.key,
-                      exercise: entry.value,
-                    )),
             const SizedBox(height: 16),
             TextButton(
               onPressed: () {
