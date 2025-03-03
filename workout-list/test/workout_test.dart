@@ -1,6 +1,5 @@
 import 'package:demo/auth/user.dart';
 import 'package:demo/auth/user_service.dart';
-import 'package:demo/core/abstractions/database_abstraction.dart';
 import 'package:demo/core/locator.dart';
 import 'package:demo/workout/workout_repository.dart';
 import 'package:demo/workout/workout_view.dart';
