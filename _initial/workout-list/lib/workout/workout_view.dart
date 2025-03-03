@@ -74,7 +74,7 @@ class ExerciseCard extends StatelessWidget {
     return ValueListenableBuilder(
       valueListenable: exercise,
       builder: (context, value, child) {
-        return Text('$name: $value');
+        return SizedBox();
       },
     );
   }
