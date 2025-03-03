@@ -112,7 +112,8 @@ jobs:
             echo "Checking project: '$CLEAN_PROJECT'"
             
             # Check if any changed files match this project path
-            if echo "$FILTERED_CHANGED_FILES" | grep -q "^$CLEAN_PROJECT/" || true; then
+            MATCHES=$(echo "$FILTERED_CHANGED_FILES" | grep "^$CLEAN_PROJECT/" || true)
+            if [ -n "$MATCHES" ]; then
               echo "  ✅ Found changes for $CLEAN_PROJECT"
               CHANGED_PROJECTS+=("$CLEAN_PROJECT")
             else
