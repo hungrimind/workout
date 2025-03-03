@@ -30,7 +30,7 @@ jobs:
 
           # Find Flutter projects and write to file - one per line
           echo "Finding Flutter/Dart projects (excluding _initial and hidden directories)..."
-          find . -maxdepth 1 -type d -not -path "*/\.*" -not -path "./_initial" -not -path "." -exec test -f '{}/pubspec.yaml' \; -print > project_dirs.txt
+          find . -maxdepth 1 -type d -not -path "*/\.*" -not -path "./_initial" -not -path "." -exec test -f '{}/pubspec.yaml' \; -print | sed 's|^\./||' > project_dirs.txt
 
           # Format as a properly escaped JSON array for GitHub Actions
           echo "project_dirs<<EOF" >> $GITHUB_OUTPUT
@@ -76,14 +76,37 @@ jobs:
           # Read all project directories
           ALL_PROJECTS=$(cat project_dirs.txt)
 
+          # Print the projects for debugging
+          echo "All projects (from file):"
+          cat project_dirs.txt
+
           # Find which projects contain changed files
           CHANGED_PROJECTS=()
-          for PROJECT in $ALL_PROJECTS; do
+          echo "==== DEBUG: Checking projects for changes ===="
+
+          # Use while loop with read to properly handle line breaks
+          while read -r PROJECT || [ -n "$PROJECT" ]; do
+            if [ -z "$PROJECT" ]; then continue; fi
+            
+            # Remove ./ prefix if present and trim whitespace
+            CLEAN_PROJECT=$(echo "$PROJECT" | sed 's|^\./||' | xargs)
+            echo "Checking project: '$CLEAN_PROJECT'"
+            
             # Check if any changed files match this project path
-            if echo "$FILTERED_CHANGED_FILES" | grep -q "^$PROJECT/"; then
-              CHANGED_PROJECTS+=("$PROJECT")
+            if echo "$FILTERED_CHANGED_FILES" | grep -q "^$CLEAN_PROJECT/"; then
+              echo "  ✅ Found changes for $CLEAN_PROJECT"
+              CHANGED_PROJECTS+=("$CLEAN_PROJECT")
+            else
+              echo "  ❌ No changes detected for $CLEAN_PROJECT"
+              # Check individual files for debugging
+              echo "  Looking for patterns like: ^$CLEAN_PROJECT/"
+              echo "$FILTERED_CHANGED_FILES" | while read -r FILE; do
+                if [[ "$FILE" == $CLEAN_PROJECT/* ]]; then
+                  echo "    Should match: $FILE"
+                fi
+              done
             fi
-          done
+          done < project_dirs.txt
 
           # Check if any projects have changed
           if [ ${#CHANGED_PROJECTS[@]} -eq 0 ]; then
@@ -95,7 +118,7 @@ jobs:
             # Add debug info
             echo "==== DEBUG: No changed projects detected ===="
             echo "All detected projects:"
-            echo "$ALL_PROJECTS"
+            cat project_dirs.txt
             echo "Filtered changed files:"
             echo "$FILTERED_CHANGED_FILES"
           else
@@ -114,6 +137,12 @@ jobs:
               echo "  Changed files:"
               echo "$FILTERED_CHANGED_FILES" | grep "^$PROJECT/" | sed 's/^/    /'
             done
+            
+            # Extra debug info to confirm the output is correctly formatted
+            echo "==== DEBUG: GitHub Actions Output ===="
+            echo "has_changes=true"
+            echo "changed_projects:"
+            printf '%s\n' "${CHANGED_PROJECTS[@]}" | jq -R -s 'split("\n") | map(select(length > 0))'
           fi
 
           # Create step summary
