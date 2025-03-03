@@ -175,7 +175,7 @@ jobs:
           make ci-lint-project PROJECT=${{ matrix.project }}
 
   unit_and_widget_tests:
-    needs: detect_changes
+    needs: [detect_changes, lint]
     name: Unit and Widget tests
     runs-on: ubuntu-latest
     if: needs.detect_changes.outputs.has_changes == 'true'
@@ -195,7 +195,7 @@ jobs:
           make ci-test-project PROJECT=${{ matrix.project }}
 
   build_web:
-    needs: detect_changes
+    needs: [detect_changes, lint, unit_and_widget_tests]
     name: Build Web
     runs-on: ubuntu-latest
     if: needs.detect_changes.outputs.has_changes == 'true'
