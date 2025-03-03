@@ -49,10 +49,6 @@ jobs:
     name: Lint and Format Check
     needs: discover_projects
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        project_dir: ${{ fromJson(needs.discover_projects.outputs.project_dirs) }}
-      fail-fast: false
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
@@ -62,17 +58,13 @@ jobs:
 
       - name: Run lint and format check
         run: |
-          cd ${{ matrix.project_dir }}
+          # Run from the root directory where the Makefile is located
           make ci-lint
 
   unit_and_widget_tests:
     needs: [discover_projects, lint]
     name: Unit and Widget tests
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        project_dir: ${{ fromJson(needs.discover_projects.outputs.project_dirs) }}
-      fail-fast: false
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
@@ -82,17 +74,13 @@ jobs:
 
       - name: Run tests
         run: |
-          cd ${{ matrix.project_dir }}
+          # Run from the root directory where the Makefile is located
           make ci-test
 
   build_web:
     needs: [discover_projects, unit_and_widget_tests]
     name: Build Web
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        project_dir: ${{ fromJson(needs.discover_projects.outputs.project_dirs) }}
-      fail-fast: false
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
@@ -102,5 +90,5 @@ jobs:
 
       - name: Build web
         run: |
-          cd ${{ matrix.project_dir }}
+          # Run from the root directory where the Makefile is located
           make ci-build
