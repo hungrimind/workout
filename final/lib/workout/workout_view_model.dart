@@ -29,7 +29,7 @@ class WorkoutViewModel {
   }
 
   Future<void> _loadPreviousExercises() async {
-    // Skip loading previous exercises if user is not logged in test
+    // Skip loading previous exercises if user is not logged in
     if (userNotifier.value == null || userNotifier.value!.id == null) return;
 
     final previousWorkouts =
