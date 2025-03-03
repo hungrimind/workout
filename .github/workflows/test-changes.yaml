@@ -69,9 +69,28 @@ jobs:
           echo "$CHANGED_FILES"
 
           # Filter out files in ignored directories like _initial
-          FILTERED_CHANGED_FILES=$(echo "$CHANGED_FILES" | grep -v "^_initial/" | grep -v "^\.github/")
+          # Use grep -v with || true to prevent non-zero exit codes when there are no matches
+          FILTERED_CHANGED_FILES=$(echo "$CHANGED_FILES" | { grep -v "^_initial/" || true; } | { grep -v "^\.github/" || true; })
           echo "Filtered changed files (excluding _initial and .github):"
           echo "$FILTERED_CHANGED_FILES"
+
+          # Check if there are any filtered changes at all
+          if [ -z "$FILTERED_CHANGED_FILES" ]; then
+            echo "No changes detected outside of ignored directories."
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "changed_projects=[]" >> $GITHUB_OUTPUT
+            
+            # Create step summary for no changes
+            echo "# No Projects Changed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**✅ Workflow completed successfully - no projects to process**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Changes were detected only in ignored directories (_initial, .github) or non-project files." >> $GITHUB_STEP_SUMMARY
+            
+            # Add debug info
+            echo "==== DEBUG: No changed files detected outside ignored directories ===="
+            exit 0
+          fi
 
           # Read all project directories
           ALL_PROJECTS=$(cat project_dirs.txt)
@@ -93,7 +112,7 @@ jobs:
             echo "Checking project: '$CLEAN_PROJECT'"
             
             # Check if any changed files match this project path
-            if echo "$FILTERED_CHANGED_FILES" | grep -q "^$CLEAN_PROJECT/"; then
+            if echo "$FILTERED_CHANGED_FILES" | grep -q "^$CLEAN_PROJECT/" || true; then
               echo "  ✅ Found changes for $CLEAN_PROJECT"
               CHANGED_PROJECTS+=("$CLEAN_PROJECT")
             else
@@ -121,6 +140,13 @@ jobs:
             cat project_dirs.txt
             echo "Filtered changed files:"
             echo "$FILTERED_CHANGED_FILES"
+            
+            # Create step summary for no changes
+            echo "# No Projects Changed" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**✅ Workflow completed successfully - no projects to process**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Changes were detected outside of ignored directories, but none affected any project directories." >> $GITHUB_STEP_SUMMARY
           else
             echo "has_changes=true" >> $GITHUB_OUTPUT
             
@@ -135,7 +161,7 @@ jobs:
               echo "- $PROJECT"
               # Show which files changed in this project
               echo "  Changed files:"
-              echo "$FILTERED_CHANGED_FILES" | grep "^$PROJECT/" | sed 's/^/    /'
+              echo "$FILTERED_CHANGED_FILES" | grep "^$PROJECT/" || true | sed 's/^/    /'
             done
             
             # Extra debug info to confirm the output is correctly formatted
@@ -213,3 +239,14 @@ jobs:
       - name: Build web
         run: |
           make ci-build-project PROJECT=${{ matrix.project }}
+
+  summarize_no_changes:
+    needs: detect_changes
+    name: No Changes Summary
+    runs-on: ubuntu-latest
+    if: needs.detect_changes.outputs.has_changes == 'false'
+    steps:
+      - name: Display success message
+        run: |
+          echo "✅ Workflow completed successfully: No project changes detected outside of ignored directories."
+          echo "All tests skipped as expected."
