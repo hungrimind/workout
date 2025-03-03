@@ -45,6 +45,49 @@ build-web-all:
 		cd $$d && flutter build web && cd -; \
 	done
 
+# Single project commands
+.PHONY: get-deps
+get-deps:
+	@echo "=== Getting dependencies for $(PROJECT) ==="
+	cd $(PROJECT) && flutter pub get
+
+.PHONY: format-check-project
+format-check-project:
+	@echo "=== Checking format for $(PROJECT) ==="
+	cd $(PROJECT) && dart format $$(find lib -name "*.dart" -not \( -name "*.*freezed.dart" -o -name "*.*g.dart" \) ) --set-exit-if-changed
+
+.PHONY: analyze-project
+analyze-project:
+	@echo "=== Analyzing $(PROJECT) ==="
+	cd $(PROJECT) && dart analyze . --no-fatal-warnings
+
+.PHONY: test-project
+test-project:
+	@echo "=== Testing $(PROJECT) ==="
+	cd $(PROJECT) && flutter test --exclude-tags=golden
+
+.PHONY: build-web-project
+build-web-project:
+	@echo "=== Building web for $(PROJECT) ==="
+	cd $(PROJECT) && flutter build web
+
+# CI commands for single project
+.PHONY: ci-lint-project
+ci-lint-project:
+	$(MAKE) get-deps PROJECT=$(PROJECT)
+	$(MAKE) analyze-project PROJECT=$(PROJECT)
+	$(MAKE) format-check-project PROJECT=$(PROJECT)
+
+.PHONY: ci-test-project
+ci-test-project:
+	$(MAKE) get-deps PROJECT=$(PROJECT)
+	$(MAKE) test-project PROJECT=$(PROJECT)
+
+.PHONY: ci-build-project
+ci-build-project:
+	$(MAKE) get-deps PROJECT=$(PROJECT)
+	$(MAKE) build-web-project PROJECT=$(PROJECT)
+
 # CI commands
 .PHONY: ci-lint
 ci-lint: get-all analyze-all format-check

@@ -21,19 +21,24 @@ jobs:
       - id: set-dirs
         name: Find project directories
         run: |
-          DIRS=$(find . -type d -maxdepth 1 -not -path "*/\.*" -not -path "./_initial" -not -path "." | jq -R -s -c 'split("\n")[:-1]')
-          echo "project_dirs=${DIRS}" >> $GITHUB_OUTPUT
+          # Create a temporary file to store project directories
+          touch project_dirs.txt
 
-          # Count directories correctly using jq to get array length
-          DIRS_COUNT=$(echo $DIRS | jq 'length')
+          # Find Flutter projects and write to file - one per line
+          find . -maxdepth 1 -type d -not -path "*/\.*" -not -path "./_initial" -not -path "." -exec test -f '{}/pubspec.yaml' \; -print > project_dirs.txt
 
-          # Get directories as newline-separated list
-          DIRS_LIST=$(echo $DIRS | jq -r '.[]')
+          # Create a proper JSON array for GitHub Actions
+          echo "project_dirs=$(cat project_dirs.txt | jq -R -s 'split("\n") | map(select(length > 0))')" >> $GITHUB_OUTPUT
+
+          # Count projects found
+          DIRS_COUNT=$(cat project_dirs.txt | grep -v '^$' | wc -l)
 
           # Print count and list to console
           echo "==== Found $DIRS_COUNT valid project directories ===="
-          echo "$DIRS_LIST" | while read -r dir; do
-            echo "- $dir"
+          cat project_dirs.txt | while read -r dir; do
+            if [ ! -z "$dir" ]; then
+              echo "- $dir"
+            fi
           done
 
           # Create step summary
@@ -41,14 +46,20 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Total: $DIRS_COUNT**" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "$DIRS_LIST" | while read -r dir; do
-            echo "- \`$dir\`" >> $GITHUB_STEP_SUMMARY
+          cat project_dirs.txt | while read -r dir; do
+            if [ ! -z "$dir" ]; then
+              echo "- \`$dir\`" >> $GITHUB_STEP_SUMMARY
+            fi
           done
 
   lint:
     name: Lint and Format Check
     needs: discover_projects
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project: ${{ fromJson(needs.discover_projects.outputs.project_dirs) }}
+      fail-fast: false
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
@@ -58,13 +69,16 @@ jobs:
 
       - name: Run lint and format check
         run: |
-          # Run from the root directory where the Makefile is located
-          make ci-lint
+          make ci-lint-project PROJECT=${{ matrix.project }}
 
   unit_and_widget_tests:
     needs: [discover_projects, lint]
     name: Unit and Widget tests
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project: ${{ fromJson(needs.discover_projects.outputs.project_dirs) }}
+      fail-fast: false
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
@@ -74,13 +88,16 @@ jobs:
 
       - name: Run tests
         run: |
-          # Run from the root directory where the Makefile is located
-          make ci-test
+          make ci-test-project PROJECT=${{ matrix.project }}
 
   build_web:
-    needs: [discover_projects, unit_and_widget_tests]
+    needs: [discover_projects, lint, unit_and_widget_tests]
     name: Build Web
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project: ${{ fromJson(needs.discover_projects.outputs.project_dirs) }}
+      fail-fast: false
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
@@ -90,5 +107,4 @@ jobs:
 
       - name: Build web
         run: |
-          # Run from the root directory where the Makefile is located
-          make ci-build
+          make ci-build-project PROJECT=${{ matrix.project }}
