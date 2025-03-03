@@ -29,6 +29,7 @@ jobs:
           touch project_dirs.txt
 
           # Find Flutter projects and write to file - one per line
+          echo "Finding Flutter/Dart projects (excluding _initial and hidden directories)..."
           find . -maxdepth 1 -type d -not -path "*/\.*" -not -path "./_initial" -not -path "." -exec test -f '{}/pubspec.yaml' \; -print > project_dirs.txt
 
           # Format as a properly escaped JSON array for GitHub Actions
@@ -47,6 +48,10 @@ jobs:
             fi
           done
 
+          # Debug: List all top-level directories for reference
+          echo "==== All top-level directories ===="
+          find . -maxdepth 1 -type d -not -path "." | sort
+
       - id: changed-dirs
         name: Detect changed projects
         run: |
@@ -63,6 +68,11 @@ jobs:
           echo "Changed files:"
           echo "$CHANGED_FILES"
 
+          # Filter out files in ignored directories like _initial
+          FILTERED_CHANGED_FILES=$(echo "$CHANGED_FILES" | grep -v "^_initial/" | grep -v "^\.github/")
+          echo "Filtered changed files (excluding _initial and .github):"
+          echo "$FILTERED_CHANGED_FILES"
+
           # Read all project directories
           ALL_PROJECTS=$(cat project_dirs.txt)
 
@@ -70,7 +80,7 @@ jobs:
           CHANGED_PROJECTS=()
           for PROJECT in $ALL_PROJECTS; do
             # Check if any changed files match this project path
-            if echo "$CHANGED_FILES" | grep -q "^$PROJECT/"; then
+            if echo "$FILTERED_CHANGED_FILES" | grep -q "^$PROJECT/"; then
               CHANGED_PROJECTS+=("$PROJECT")
             fi
           done
@@ -81,6 +91,13 @@ jobs:
             echo "No projects have changes"
             # Use empty array but valid JSON
             echo "changed_projects=[]" >> $GITHUB_OUTPUT
+            
+            # Add debug info
+            echo "==== DEBUG: No changed projects detected ===="
+            echo "All detected projects:"
+            echo "$ALL_PROJECTS"
+            echo "Filtered changed files:"
+            echo "$FILTERED_CHANGED_FILES"
           else
             echo "has_changes=true" >> $GITHUB_OUTPUT
             
@@ -93,6 +110,9 @@ jobs:
             echo "==== Found ${#CHANGED_PROJECTS[@]} changed projects ===="
             for PROJECT in "${CHANGED_PROJECTS[@]}"; do
               echo "- $PROJECT"
+              # Show which files changed in this project
+              echo "  Changed files:"
+              echo "$FILTERED_CHANGED_FILES" | grep "^$PROJECT/" | sed 's/^/    /'
             done
           fi
 
