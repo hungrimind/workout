@@ -1,0 +1,162 @@
+name: CI
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+env:
+  FLUTTER_VERSION: "3.29.0"
+jobs:
+  detect_changes:
+    name: Detect Changed Projects
+    runs-on: ubuntu-latest
+    outputs:
+      all_project_dirs: ${{ steps.all-dirs.outputs.project_dirs }}
+      changed_project_dirs: ${{ steps.changed-dirs.outputs.changed_projects }}
+      has_changes: ${{ steps.changed-dirs.outputs.has_changes }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # This is important to get all history for comparison
+
+      - id: all-dirs
+        name: Find all project directories
+        run: |
+          # Create a temporary file to store project directories
+          touch project_dirs.txt
+
+          # Find Flutter projects and write to file - one per line
+          find . -maxdepth 1 -type d -not -path "*/\.*" -not -path "./_initial" -not -path "." -exec test -f '{}/pubspec.yaml' \; -print > project_dirs.txt
+
+          # Create a proper JSON array for GitHub Actions
+          echo "project_dirs=$(cat project_dirs.txt | jq -R -s 'split("\n") | map(select(length > 0))')" >> $GITHUB_OUTPUT
+
+          # Count projects found
+          DIRS_COUNT=$(cat project_dirs.txt | grep -v '^$' | wc -l)
+
+          # Print count and list to console
+          echo "==== Found $DIRS_COUNT valid project directories ===="
+          cat project_dirs.txt | while read -r dir; do
+            if [ ! -z "$dir" ]; then
+              echo "- $dir"
+            fi
+          done
+
+      - id: changed-dirs
+        name: Detect changed projects
+        run: |
+          # Get base commit to compare against
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            BASE_COMMIT=${{ github.event.pull_request.base.sha }}
+          else
+            # For push events, compare with the parent commit
+            BASE_COMMIT=$(git rev-parse HEAD^)
+          fi
+
+          # Find all changed files
+          CHANGED_FILES=$(git diff --name-only $BASE_COMMIT HEAD)
+          echo "Changed files:"
+          echo "$CHANGED_FILES"
+
+          # Read all project directories
+          ALL_PROJECTS=$(cat project_dirs.txt)
+
+          # Find which projects contain changed files
+          CHANGED_PROJECTS=()
+          for PROJECT in $ALL_PROJECTS; do
+            # Check if any changed files match this project path
+            if echo "$CHANGED_FILES" | grep -q "^$PROJECT/"; then
+              CHANGED_PROJECTS+=("$PROJECT")
+            fi
+          done
+
+          # Check if any projects have changed
+          if [ ${#CHANGED_PROJECTS[@]} -eq 0 ]; then
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "No projects have changes"
+            # Use empty array but valid JSON
+            echo "changed_projects=[]" >> $GITHUB_OUTPUT
+          else
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            # Format as JSON array
+            PROJECTS_JSON=$(printf '"%s",' "${CHANGED_PROJECTS[@]}" | sed 's/,$//')
+            echo "changed_projects=[$PROJECTS_JSON]" >> $GITHUB_OUTPUT
+            
+            # Print changed projects
+            echo "==== Found ${#CHANGED_PROJECTS[@]} changed projects ===="
+            for PROJECT in "${CHANGED_PROJECTS[@]}"; do
+              echo "- $PROJECT"
+            done
+          fi
+
+          # Create step summary
+          echo "# Changed Projects" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Total Changed: ${#CHANGED_PROJECTS[@]}**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          for PROJECT in "${CHANGED_PROJECTS[@]}"; do
+            echo "- \`$PROJECT\`" >> $GITHUB_STEP_SUMMARY
+          done
+
+  lint:
+    name: Lint and Format Check
+    needs: detect_changes
+    runs-on: ubuntu-latest
+    if: needs.detect_changes.outputs.has_changes == 'true'
+    strategy:
+      matrix:
+        project: ${{ fromJson(needs.detect_changes.outputs.changed_project_dirs) }}
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Run lint and format check
+        run: |
+          make ci-lint-project PROJECT=${{ matrix.project }}
+
+  unit_and_widget_tests:
+    needs: detect_changes
+    name: Unit and Widget tests
+    runs-on: ubuntu-latest
+    if: needs.detect_changes.outputs.has_changes == 'true'
+    strategy:
+      matrix:
+        project: ${{ fromJson(needs.detect_changes.outputs.changed_project_dirs) }}
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Run tests
+        run: |
+          make ci-test-project PROJECT=${{ matrix.project }}
+
+  build_web:
+    needs: detect_changes
+    name: Build Web
+    runs-on: ubuntu-latest
+    if: needs.detect_changes.outputs.has_changes == 'true'
+    strategy:
+      matrix:
+        project: ${{ fromJson(needs.detect_changes.outputs.changed_project_dirs) }}
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Build web
+        run: |
+          make ci-build-project PROJECT=${{ matrix.project }}
