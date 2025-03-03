@@ -1,0 +1,104 @@
+name: CI
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+env:
+  FLUTTER_VERSION: "3.29.0"
+jobs:
+  discover_projects:
+    name: Discover Projects
+    runs-on: ubuntu-latest
+    outputs:
+      project_dirs: ${{ steps.set-dirs.outputs.project_dirs }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: set-dirs
+        name: Find project directories
+        run: |
+          DIRS=$(find . -type d -maxdepth 1 -not -path "*/\.*" -not -path "./_initial" -not -path "." | jq -R -s -c 'split("\n")[:-1]')
+          echo "project_dirs=${DIRS}" >> $GITHUB_OUTPUT
+
+          # Extract directories as array for better display
+          DIRS_ARRAY=$(echo $DIRS | jq -r '.[]')
+          DIRS_COUNT=$(echo $DIRS_ARRAY | wc -l)
+
+          # Print count and list to console
+          echo "==== Found $DIRS_COUNT valid project directories ===="
+          echo "$DIRS_ARRAY" | while read dir; do
+            echo "- $dir"
+          done
+
+          # Create step summary
+          echo "# Project Directories Found" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Total: $DIRS_COUNT**" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "$DIRS_ARRAY" | while read dir; do
+            echo "- \`$dir\`" >> $GITHUB_STEP_SUMMARY
+          done
+
+  lint:
+    name: Lint and Format Check
+    needs: discover_projects
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project_dir: ${{ fromJson(needs.discover_projects.outputs.project_dirs) }}
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Run lint and format check
+        run: |
+          cd ${{ matrix.project_dir }}
+          make ci-lint
+
+  unit_and_widget_tests:
+    needs: [discover_projects, lint]
+    name: Unit and Widget tests
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project_dir: ${{ fromJson(needs.discover_projects.outputs.project_dirs) }}
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Run tests
+        run: |
+          cd ${{ matrix.project_dir }}
+          make ci-test
+
+  build_web:
+    needs: [discover_projects, unit_and_widget_tests]
+    name: Build Web
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project_dir: ${{ fromJson(needs.discover_projects.outputs.project_dirs) }}
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: "stable"
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+
+      - name: Build web
+        run: |
+          cd ${{ matrix.project_dir }}
+          make ci-build
