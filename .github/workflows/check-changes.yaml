@@ -31,8 +31,10 @@ jobs:
           # Find Flutter projects and write to file - one per line
           find . -maxdepth 1 -type d -not -path "*/\.*" -not -path "./_initial" -not -path "." -exec test -f '{}/pubspec.yaml' \; -print > project_dirs.txt
 
-          # Create a proper JSON array for GitHub Actions
-          echo "project_dirs=$(cat project_dirs.txt | jq -R -s 'split("\n") | map(select(length > 0))')" >> $GITHUB_OUTPUT
+          # Format as a properly escaped JSON array for GitHub Actions
+          echo "project_dirs<<EOF" >> $GITHUB_OUTPUT
+          jq -R -s 'split("\n") | map(select(length > 0))' project_dirs.txt >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
           # Count projects found
           DIRS_COUNT=$(cat project_dirs.txt | grep -v '^$' | wc -l)
@@ -81,9 +83,11 @@ jobs:
             echo "changed_projects=[]" >> $GITHUB_OUTPUT
           else
             echo "has_changes=true" >> $GITHUB_OUTPUT
-            # Format as JSON array
-            PROJECTS_JSON=$(printf '"%s",' "${CHANGED_PROJECTS[@]}" | sed 's/,$//')
-            echo "changed_projects=[$PROJECTS_JSON]" >> $GITHUB_OUTPUT
+            
+            # Format as properly escaped JSON array using EOF delimiter
+            echo "changed_projects<<EOF" >> $GITHUB_OUTPUT
+            printf '%s\n' "${CHANGED_PROJECTS[@]}" | jq -R -s 'split("\n") | map(select(length > 0))' >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
             
             # Print changed projects
             echo "==== Found ${#CHANGED_PROJECTS[@]} changed projects ===="
