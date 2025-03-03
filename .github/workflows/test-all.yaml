@@ -1,11 +1,5 @@
-name: CI
+name: Test All
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    branches:
-      - main
   workflow_dispatch:
 env:
   FLUTTER_VERSION: "3.29.0"
@@ -21,23 +15,26 @@ jobs:
       - id: set-dirs
         name: Find project directories
         run: |
-          DIRS=$(find . -type d -maxdepth 1 -not -path "*/\.*" -not -path "./_initial" -not -path "." | jq -R -s -c 'split("\n")[:-1]')
+          # Find Flutter/Dart projects (with pubspec.yaml)
+          DIRS=$(find . -maxdepth 1 -type d -not -path "*/\.*" -not -path "./_initial" -not -path "." -exec test -f '{}/pubspec.yaml' \; -print | sed 's|^\./||' | jq -R -s -c 'split("\n")[:-1]')
           echo "project_dirs=${DIRS}" >> $GITHUB_OUTPUT
 
           # Count directories correctly using jq to get array length
           DIRS_COUNT=$(echo $DIRS | jq 'length')
 
-          # Get directories as newline-separated list
+          # Get directories as newline-separated list for display
           DIRS_LIST=$(echo $DIRS | jq -r '.[]')
 
           # Print count and list to console
-          echo "==== Found $DIRS_COUNT valid project directories ===="
+          echo "==== Found $DIRS_COUNT valid Flutter/Dart project directories ===="
           echo "$DIRS_LIST" | while read -r dir; do
-            echo "- $dir"
+            if [ -f "$dir/pubspec.yaml" ]; then
+              echo "- $dir"
+            fi
           done
 
           # Create step summary
-          echo "# Project Directories Found" >> $GITHUB_STEP_SUMMARY
+          echo "# Flutter/Dart Project Directories Found" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Total: $DIRS_COUNT**" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -78,7 +75,7 @@ jobs:
           make ci-test
 
   build_web:
-    needs: [discover_projects, unit_and_widget_tests]
+    needs: [discover_projects, lint, unit_and_widget_tests]
     name: Build Web
     runs-on: ubuntu-latest
     steps:

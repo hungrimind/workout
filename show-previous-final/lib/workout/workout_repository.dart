@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:demo/auth/user.dart';
 import 'package:demo/core/abstractions/database_abstraction.dart';
 
 class WorkoutRepository {
