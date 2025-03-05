@@ -66,7 +66,7 @@ class _WorkoutViewState extends State<WorkoutView> {
   }
 }
 
-class ExerciseCard extends StatelessWidget {
+class ExerciseCard extends StatefulWidget {
   ExerciseCard({
     super.key,
     required this.exercise,
@@ -76,12 +76,25 @@ class ExerciseCard extends StatelessWidget {
 
   final ValueNotifier<List<int>> exercise;
   final String name;
-  final TextEditingController repsController = TextEditingController();
   final WorkoutViewModel workoutViewModel;
+
+  @override
+  State<ExerciseCard> createState() => _ExerciseCardState();
+}
+
+class _ExerciseCardState extends State<ExerciseCard> {
+  final TextEditingController repsController = TextEditingController();
+
+  @override
+  void dispose() {
+    repsController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: exercise,
+      valueListenable: widget.exercise,
       builder: (context, value, child) {
         return Card(
           elevation: 0,
@@ -96,7 +109,7 @@ class ExerciseCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  name,
+                  widget.name,
                   style: const TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w500,
