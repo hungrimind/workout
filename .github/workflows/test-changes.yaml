@@ -8,7 +8,7 @@ on:
       - main
   workflow_dispatch:
 env:
-  FLUTTER_VERSION: "3.29.0"
+  FLUTTER_VERSION: "3.32.0"
 jobs:
   detect_changes:
     name: Detect Changed Projects
