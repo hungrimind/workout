@@ -8,7 +8,7 @@ on:
       - main
   workflow_dispatch:
 env:
-  FLUTTER_VERSION: "3.32.0"
+  FLUTTER_VERSION: "3.35.0"
 jobs:
   detect_changes:
     name: Detect Changed Projects
@@ -68,11 +68,42 @@ jobs:
           echo "Changed files:"
           echo "$CHANGED_FILES"
 
-          # Filter out files in ignored directories like _initial
+          # Check for workflow changes that should trigger all projects
+          WORKFLOW_CHANGES=$(echo "$CHANGED_FILES" | grep "^\.github/workflows/test-changes\.yaml$" || true)
+          
+          # Filter out files in ignored directories like _initial (but keep workflow changes for special handling)
           # Use grep -v with || true to prevent non-zero exit codes when there are no matches
           FILTERED_CHANGED_FILES=$(echo "$CHANGED_FILES" | { grep -v "^_initial/" || true; } | { grep -v "^\.github/" || true; })
           echo "Filtered changed files (excluding _initial and .github):"
           echo "$FILTERED_CHANGED_FILES"
+
+          # If workflow file changed, test all projects regardless of other changes
+          if [ -n "$WORKFLOW_CHANGES" ]; then
+            echo "==== Workflow file changed - testing all projects ===="
+            echo "has_changes=true" >> $GITHUB_OUTPUT
+            
+            # Use all projects as changed projects
+            echo "changed_projects<<EOF" >> $GITHUB_OUTPUT
+            jq -R -s 'split("\n") | map(select(length > 0))' project_dirs.txt >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+            
+            # Create step summary for workflow changes
+            echo "# All Projects Will Be Tested" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**🔄 Workflow configuration changed - testing all projects**" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Changed workflow file: \`.github/workflows/test-changes.yaml\`" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "All projects will be tested:" >> $GITHUB_STEP_SUMMARY
+            cat project_dirs.txt | while read -r dir; do
+              if [ ! -z "$dir" ]; then
+                echo "- \`$dir\`" >> $GITHUB_STEP_SUMMARY
+              fi
+            done
+            
+            echo "==== DEBUG: All projects marked as changed due to workflow modification ===="
+            exit 0
+          fi
 
           # Check if there are any filtered changes at all
           if [ -z "$FILTERED_CHANGED_FILES" ]; then

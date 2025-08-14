@@ -2,7 +2,7 @@ name: Test All
 on:
   workflow_dispatch:
 env:
-  FLUTTER_VERSION: "3.32.0"
+  FLUTTER_VERSION: "3.35.0"
 jobs:
   discover_projects:
     name: Discover Projects
