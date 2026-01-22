@@ -102,7 +102,7 @@ void main() {
     test('Initial state should have empty sets', () {
       // Verify all exercises are initialized with empty sets
       for (var exercise in viewModel.exercises) {
-        expect(viewModel.exerciseSets[exercise]!.value, isEmpty,
+        expect(viewModel.exerciseSets[exercise]?.value, isEmpty,
             reason: 'Exercise $exercise should have empty sets');
       }
     });
